@@ -1,8 +1,8 @@
-from django.test import Client
+
 from rest_framework import serializers
 from .models import Product,Client
 
-class PruductSerializer(serializers.ModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):
     class Mete:
         model = Product
         fields = '__all__'
