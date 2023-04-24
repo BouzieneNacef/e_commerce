@@ -4,6 +4,16 @@ from django.utils import timezone
 
 # Create your models here.
 
+class Address(models.Model):
+    houseNumber = models.PositiveSmallIntegerField(default=0)
+    street = models.CharField(max_length=50, default='')
+    city = models.CharField(max_length=50, default='')
+    country = models.CharField(max_length=50, default='')
+    postalCode = models.CharField(max_length=50, default='')
+    class Meta:
+        db_table = 'address'
+        ordering = ['country', 'city']
+
 class User(models.Model):
     name = models.CharField(max_length=50, default='')
     password = models.CharField(max_length=50, default='')
