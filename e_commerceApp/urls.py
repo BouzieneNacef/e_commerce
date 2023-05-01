@@ -25,5 +25,6 @@ urlpatterns = [
     #http://localhost:8000/ecommerce/products/1/ => delete the product with id=1 (DELETE method)
     #Same urls for clients
 
-    path('', include(router.urls))
+    path('', include(router.urls)),
+    path('product/max_min_price/', ProductViewSet.as_view({'get':'max_min_price'}))
 ]

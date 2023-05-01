@@ -13,7 +13,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ClientSerializer(serializers.ModelSerializer):
-    address = AddressSerializer(read_only = True)
+    #address = AddressSerializer(read_only = True)
     class Meta:
         model = Client
         fields = ('name','email', 'phone', 'typeClient')

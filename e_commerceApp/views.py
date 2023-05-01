@@ -18,14 +18,30 @@ class ProductViewSet(viewsets.ModelViewSet):
         #http_mettod_names =['get', 'post']
 
         #add  some custom methods to the viewset
-        @action(methods=['get'], detail=True)
+        # detail = True: if the methode is applied a specific object
+        # detail = False: if the methode is applied a list of object (all object)
+        @action(methods=['get'], detail=False) 
         def max_min_price(self, request):
                 if request.method!= 'GET':
                         return Response({'message':'the method is not allowed', 'status':status.HTTP_405_METHOD_NOT_ALLOWED})
                 #get the maximum and the minimum price:
                 res = Product.objects.aggregate(Max('price'), Min('price'))
-                return Response({'max price ':res(0),'min price':res(1)})
-        
+                #json ==> Response('key': value)
+                #return Response({'max price ':res(0),'min price':res(1)})  
+                #get the maximum price
+                max_price = Product.objects.aggregate(Max('price'))['price__max']
+                #get the minimum price
+                min_price = Product.objects.aggregate(Min('price'))['price__min']
+                # get the product with the maximum price:
+                p_max = Product.objects.get(price=max_price)
+                # get the product with the minimum price:
+                p_min = Product.objects.get(price=min_price)
+                # serializer p_max and p_min 
+                serializer1 = ProductSerializer(p_max)
+                serializer2 = ProductSerializer(p_min)
+                # if the object is a list of object, we should use many = True
+                # serializer = ProductSerializer(p_max, many= True)
+                return Response({'Product with max price': serializer1, 'Product with min price': serializer2})
 
 #define the Client CRUD using the ModelViewSet:        
 class ClientViewSet(viewsets.ModelViewSet):
