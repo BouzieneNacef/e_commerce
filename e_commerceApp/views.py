@@ -22,26 +22,26 @@ class ProductViewSet(viewsets.ModelViewSet):
         # detail = False: if the methode is applied a list of object (all object)
         @action(methods=['get'], detail=False) 
         def max_min_price(self, request):
-                if request.method!= 'GET':
-                        return Response({'message':'the method is not allowed', 'status':status.HTTP_405_METHOD_NOT_ALLOWED})
-                #get the maximum and the minimum price:
-                res = Product.objects.aggregate(Max('price'), Min('price'))
-                #json ==> Response('key': value)
-                #return Response({'max price ':res(0),'min price':res(1)})  
-                #get the maximum price
-                max_price = Product.objects.aggregate(Max('price'))['price__max']
-                #get the minimum price
-                min_price = Product.objects.aggregate(Min('price'))['price__min']
-                # get the product with the maximum price:
-                p_max = Product.objects.get(price=max_price)
-                # get the product with the minimum price:
-                p_min = Product.objects.get(price=min_price)
-                # serializer p_max and p_min 
-                serializer1 = ProductSerializer(p_max)
-                serializer2 = ProductSerializer(p_min)
-                # if the object is a list of object, we should use many = True
-                # serializer = ProductSerializer(p_max, many= True)
-                return Response({'Product with max price': serializer1, 'Product with min price': serializer2})
+            if request.method!= 'GET':
+                return Response({'message':'the method is not allowed', 'status':status.HTTP_405_METHOD_NOT_ALLOWED})
+            #get the maximum and the minimum price:
+            res = Product.objects.aggregate(Max('price'), Min('price'))
+            #json ==> Response('key': value)
+            #return Response({'max price ':res(0),'min price':res(1)})  
+            #get the maximum price
+            max_price = Product.objects.aggregate(Max('price'))['price__max']
+            #get the minimum price
+            min_price = Product.objects.aggregate(Min('price'))['price__min']
+            # get the product with the maximum price:
+            p_max = Product.objects.get(price=max_price)
+            # get the product with the minimum price:
+            p_min = Product.objects.get(price=min_price)
+            # serializer p_max and p_min 
+            serializer1 = ProductSerializer(p_max)
+            serializer2 = ProductSerializer(p_min)
+            # if the object is a list of object, we should use many = True
+            # serializer = ProductSerializer(p_max, many= True)
+            return Response({'Product with max price': serializer1, 'Product with min price': serializer2})
 
 #define the Client CRUD using the ModelViewSet:        
 class ClientViewSet(viewsets.ModelViewSet):
@@ -111,13 +111,41 @@ class ClientViewSet(viewsets.ModelViewSet):
 
 #define the Provider CRUD using the ModelViewSet:
 class ProviderViewSet(viewsets.ModelViewSet):
-        queryset = Provider.objects.all()
-        serializer_class = ProviderSerializer
+    queryset = Provider.objects.all()
+    serializer_class = ProviderSerializer
 
 #define the Command CRUD using the ModelViewSet:
 class CommandViewSet(viewsets.ModelViewSet):
-        queryset = Command.objects.all()
-        serializer_class = CommadSerializer
+    queryset = Command.objects.all()
+    serializer_class = CommadSerializer    
+    #define a custom method to get the products in stock ordered by a given client
+    #The method should return products ordered by a given client in a period
+    @action(detail=True, methods=['get'])
+    def client_products(self, request, pk=None):
+        client_id = request.query_params.get('client_id', None)
+        start_date = request.query_params.get('start_date', None)
+        end_date = request.query_params.get('end_date', None)
+
+        # if request parametres are not null 
+        if client_id and start_date and end_date:
+            try:
+                client = Client.objects.get(pk=client_id)
+                # strptime : to convert to string
+                start_date = timezone.datetime.strptime(start_date, '%Y-%m-%d').date()
+                end_date = timezone.datetime.strptime(end_date, '%Y-%m-%d').date()
+            except (ValueError, Client.DoesNotExist):
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            # the commands of the client between the two dates
+            commands = Command.objects.filter(client=client, date_cmd__range=[start_date, end_date])
+            # create a list of products id
+            product_ids = [command.product.id for command in commands]
+            #  product in stock 
+            products = Product.objects.filter(id__in=product_ids, stock__gt=0).order_by('label')
+
+            serializer = ProductSerializer(products, many=True)
+            return Response(serializer.data)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 #define the Address CRUD using the ModelViewSet:
 class AddressViewSet(viewsets.ModelViewSet):

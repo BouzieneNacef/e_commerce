@@ -4,6 +4,11 @@ from django.utils import timezone
 
 # Create your models here.
 
+class ClientType(models.TextChoices):
+    Normal =('Normal', 'Normal Customer')
+    Loyal =('Loyal', 'Loyal Customer')
+    Vip =('VIP', 'Vip Customer')
+
 class Address(models.Model):
     houseNumber = models.PositiveSmallIntegerField(default=0)
     street = models.CharField(max_length=50, default='')
@@ -40,8 +45,8 @@ class Product(models.Model):
     stock = models.PositiveSmallIntegerField(default=0)
     image = models.ImageField(upload_to='image/product_image',null=True, blank=True )
     description = models.TextField(null=True, blank=True)
-    expirationDate = models.DateField(default=date(2023,12,31))
-    fabricationDate = models.DateField(default=timezone.now)
+    #expirationDate = models.DateField(default=date(2023,12,31))
+    #fabricationDate = models.DateField(default=timezone.now)
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)    
     class Meta:
         db_table ='product'
@@ -57,17 +62,14 @@ class Client(User):
     email = models.EmailField(null=True, blank=True)
     phone = models.CharField(max_length=20, default='+21600000000')
     birthdate = models.DateField(default=date(1995,11,11))
-   # typeClient = models.CharField(max_length=50, choices=[('LOYAL','Loyal Customer'),
-    #('Normall','Normal Customer'),('VIP',' Vip Customer')], default='Normal')
+    typeClient = models.CharField(max_length=50, choices=[('LOYAL','Loyal Customer'),
+    ('Normall','Normal Customer'),('VIP',' Vip Customer')], default='Normal')
     # Relationship:
     clientProduct = models.ManyToManyField(Product, through='Command', through_fields=('client', 'product'))
     class Meta:
         db_table ='client'
 
-class ClientType(models.TextChoices):
-    Normal =('Normal', 'Normal Customer')
-    Loyal =('Loyal', 'Loyal Customer')
-    Vip =('VIP', 'Vip Customer')
+
 
 class Command(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE) # utiliser en relation 

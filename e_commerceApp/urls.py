@@ -26,5 +26,9 @@ urlpatterns = [
     #Same urls for clients
 
     path('', include(router.urls)),
-    path('product/max_min_price/', ProductViewSet.as_view({'get':'max_min_price'}))
+    path('product/max_min_price/', ProductViewSet.as_view({'get':'max_min_price'})),
+     path(r'command/client_products/', 
+         CommandViewSet.as_view({'get': 'client_products'}), 
+         name='client_products'),
+    
 ]
