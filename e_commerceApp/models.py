@@ -4,10 +4,7 @@ from django.utils import timezone
 
 # Create your models here.
 
-class ClientType(models.TextChoices):
-    Normal =('Normal', 'Normal Customer')
-    Loyal =('Loyal', 'Loyal Customer')
-    Vip =('VIP', 'Vip Customer')
+
 
 class Address(models.Model):
     houseNumber = models.PositiveSmallIntegerField(default=0)
